@@ -15,7 +15,7 @@ if (isDev) {
   });
 }
 process.env.GOOGLE_API_KEY = 'AIzaSyC0XXNMSoLGYh6i0rX-5BwoeRn97EKoy68';
-const createWindow = () => {
+const createWindow = async () => {
   const mainWindow = new BrowserWindow({
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
@@ -29,7 +29,7 @@ const createWindow = () => {
   if (isDev) {
     searchDevtools('REACT')
       .then((devtools) => {
-        session.defaultSession.loadExtension(devtools, {
+        session?.defaultSession?.loadExtension(devtools, {
           allowFileAccess: true,
         });
       })
@@ -38,8 +38,10 @@ const createWindow = () => {
     mainWindow.webContents.openDevTools({ mode: 'detach' });
   }
 
+  await mainWindow.webContents.session.clearStorageData();
   mainWindow.loadFile('dist/index.html');
 };
 
 app.whenReady().then(createWindow);
 app.once('window-all-closed', () => app.quit());
+process.on('exit', () => app.quit());
