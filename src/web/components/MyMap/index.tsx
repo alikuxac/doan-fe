@@ -7,6 +7,12 @@ import {
 } from "@react-google-maps/api";
 import { useJwtHook } from "../../hooks/useJwtHook";
 import { Favorite } from "@mui/icons-material";
+import { useAppDispatch, useAppSelector } from "../../hooks/reduxHook";
+import {
+  setCenter as setDefault,
+  selectCenter,
+  selectCurrent,
+} from "../../reducers/mapSlice";
 
 export interface FavoriteInterface {
   name: string;
@@ -27,10 +33,15 @@ const initCenter = {
 };
 
 function MyMap() {
+  const dispatch = useAppDispatch();
+
+  const { latCenter, lngCenter } = useAppSelector(selectCenter);
+  const { lat, lng } = useAppSelector(selectCurrent);
+
   const { isLoaded } = useJsApiLoader({
     id: "google-map-script",
     googleMapsApiKey: "AIzaSyDyJoOIqGwx-cdSvp37X0KMRcyBA8SG3Ko",
-    libraries: ['geometry', 'places']
+    libraries: ["geometry", "places"],
   });
 
   const [map, setMap] = React.useState(null);
@@ -51,20 +62,27 @@ function MyMap() {
   }, []);
 
   const getCurrentGeoLocation = () => {
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const { latitude, longitude } = position.coords;
-        localStorage.setItem('lat', latitude.toString());
-        localStorage.setItem('lng', longitude.toString());
-        setCenter({ lat: latitude, lng: longitude });
-      },
-      (err) => {
-        console.error(err);
-      }
-    );
+    if (!latCenter && !lngCenter) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          console.log(latitude, longitude)
+          localStorage.setItem("lat", latitude.toString());
+          localStorage.setItem("lng", longitude.toString());
+          setCenter({ lat: latitude, lng: longitude });
+          dispatch(setDefault({ lat: latitude, lng: longitude }));
+        },
+        (err) => {
+          console.error(err);
+        }
+      );
+    }
+    if (lat && lng) {
+      setCenter({ lat, lng })
+    } else if (latCenter && lngCenter) {
+      setCenter({ lat: +latCenter, lng: +lngCenter });
+    }
   };
-
-  console.log(center);
 
   useEffect(() => {
     // get current geolocation
@@ -83,11 +101,10 @@ function MyMap() {
       setFavoriteList(JSON.parse(FavoriteStorage));
     } else {
       useJwtHook.getFavorite(UserData?.id).then((res) => {
-      setFavoriteList(res.data.favorites);
-      useJwtHook.setUserFavorite(res.data.favorites);
-    });
+        setFavoriteList(res.data.favorites);
+        useJwtHook.setUserFavorite(res.data.favorites);
+      });
     }
-    
   };
 
   useEffect(() => {
