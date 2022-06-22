@@ -14,7 +14,7 @@ if (isDev) {
     ),
   });
 }
-
+process.env.GOOGLE_API_KEY = 'AIzaSyC0XXNMSoLGYh6i0rX-5BwoeRn97EKoy68';
 const createWindow = () => {
   const mainWindow = new BrowserWindow({
     webPreferences: {
