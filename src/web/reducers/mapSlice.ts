@@ -4,10 +4,10 @@ import { RootState } from '../store';
 const mapSlice = createSlice({
     name: "map",
     initialState: {
-        latCenter: localStorage.getItem('lat'),  // default lat
-        lngCenter: localStorage.getItem('lng'),  // default lng
-        lat: null, // current lat
-        lng: null, // current lng
+        latCenter: 0,  // default lat
+        lngCenter: 0,  // default lng
+        lat: 0, // current lat
+        lng: 0, // current lng
     },
     reducers: {
         setCenter: (state, action) => {
@@ -21,12 +21,12 @@ const mapSlice = createSlice({
     }
 });
 
-export const { setCenter } = mapSlice.actions;
+export const { setCenter, setCurrent } = mapSlice.actions;
 
 export const selectCenter = (state: RootState) => {
     return {
-        lat: state.map.latCenter,
-        lng: state.map.lngCenter
+        latCenter: state.map.latCenter,
+        lngCenter: state.map.lngCenter
     }
 };
 
