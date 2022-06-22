@@ -57,7 +57,7 @@ export default class JwtService {
   }
 
   logout() {
-    localStorage.removeItem("token");
+    localStorage.clear();
     delete axios.defaults.headers.common["Authorization"];
   }
 
@@ -110,5 +110,31 @@ export default class JwtService {
 
   deleteUserById(id: string) {
     return axios.delete(`${this.jwtConfig.users}${id}`);
+  }
+
+  // Favorte
+  setUserFavorite(favorite: any) {
+    localStorage.setItem("favorite", JSON.stringify(favorite));
+  }
+
+  getUserFavorite() {
+    const favorite = localStorage.getItem("favorite")
+    return favorite ?? null;
+  }
+
+  getFavorite(id: any) {
+    return axios.get(`${this.jwtConfig.baseUrl}${id}/favorite`);
+  }
+
+  createFavoriteById(id: string, data: any) {
+    return axios.put(`${this.jwtConfig.baseUrl}${id}/favorite`, data);
+  }
+
+  updateFavoriteById(id: string, data: any) {
+    return axios.patch(`${this.jwtConfig.baseUrl}${id}/favorite`, data);
+  }
+
+  deleteFavoriteById(id: string, data: any) {
+    return axios.patch(`${this.jwtConfig.baseUrl}${id}/favorite`, data);
   }
 }
