@@ -111,11 +111,12 @@ function MyMap() {
     getFavorite();
   }, [setFavoriteList]);
 
-  const FavoriteMarkers = favoriteList.map((favorite) => {
+  const FavoriteMarkers = favoriteList.map((favorite, index) => {
     return (
       <Marker
         position={{ lat: favorite.lat, lng: favorite.lng }}
         label={favorite.name}
+        key={index}
       ></Marker>
     );
   });
