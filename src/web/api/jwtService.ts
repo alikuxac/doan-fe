@@ -123,18 +123,18 @@ export default class JwtService {
   }
 
   getFavorite(id: any) {
-    return axios.get(`${this.jwtConfig.baseUrl}${id}/favorite`);
+    return axios.get(`${this.jwtConfig.users}${id}/favorites`);
   }
 
   createFavoriteById(id: string, data: any) {
-    return axios.put(`${this.jwtConfig.baseUrl}${id}/favorite`, data);
+    return axios.put(`${this.jwtConfig.users}${id}/favorites`, data);
   }
 
   updateFavoriteById(id: string, data: any) {
-    return axios.patch(`${this.jwtConfig.baseUrl}${id}/favorite`, data);
+    return axios.patch(`${this.jwtConfig.users}${id}/favorites`, data);
   }
 
   deleteFavoriteById(id: string, data: any) {
-    return axios.patch(`${this.jwtConfig.baseUrl}${id}/favorite`, data);
+    return axios.patch(`${this.jwtConfig.users}${id}/favorites`, data);
   }
 }
