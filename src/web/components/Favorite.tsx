@@ -186,7 +186,7 @@ export default function Favorite() {
 
     return (
       <TableContainer component={Paper}>
-        <Table sx={{ minWidth: 500 }} aria-label="custom pagination table">
+        <Table aria-label="custom pagination table">
           <TableHead>
             <TableRow>
               <TableCell>Name</TableCell>
