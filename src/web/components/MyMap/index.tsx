@@ -45,7 +45,6 @@ function MyMap() {
   const { isLoaded } = useJsApiLoader({
     id: "google-map-script",
     googleMapsApiKey: "AIzaSyDyJoOIqGwx-cdSvp37X0KMRcyBA8SG3Ko",
-    libraries: ["geometry", "places"],
   });
 
   const [map, setMap] = React.useState<google.maps.Map | undefined>(undefined);
@@ -133,7 +132,7 @@ function MyMap() {
     <GoogleMap
       mapContainerStyle={containerStyle}
       center={center}
-      zoom={7}
+      zoom={17}
       onLoad={onLoad}
       onUnmount={onUnmount}
     >
@@ -154,6 +153,7 @@ function MyMap() {
         }}
         radius={75}
       />
+      <Marker key="defaultCenter" position={defaultPosition}></Marker>
       {FavoriteMarkers}
       <></>
     </GoogleMap>
