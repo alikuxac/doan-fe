@@ -4,14 +4,10 @@ import MyMap from "../components/MyMap";
 import SearchLayout from "../components/Search";
 import FavoriteLayout from "../components/Favorite";
 
-import TextField from "@mui/material/TextField";
-import Button from "@mui/material/Button";
 import Tab from "@mui/material/Tab";
 import TabContext from "@mui/lab/TabContext";
 import TabList from "@mui/lab/TabList";
 import TabPanel from "@mui/lab/TabPanel";
-import Checkbox from "@mui/material/Checkbox";
-import Container from "@mui/material/Container";
 
 import SearchIcon from "@mui/icons-material/Search";
 import FavoriteIcon from "@mui/icons-material/Favorite";
@@ -20,9 +16,21 @@ import MapIcon from "@mui/icons-material/Map";
 const Default: React.FC<any> = () => {
   const [value, setValue] = React.useState("search");
 
-  const handleChange = (event: React.SyntheticEvent, newValue: string) => {
+  const handleChange = (_event: React.SyntheticEvent, newValue: string) => {
     setValue(newValue);
+    localStorage.setItem('tab', newValue)
   };
+
+  const getValue = () => {
+    var tabValue = localStorage.getItem("tab");
+    if (tabValue){
+      setValue(tabValue);
+    }
+  }
+
+  React.useEffect(() => {
+    getValue();
+  }, [setValue]);
 
   return (
     <Box sx={{ width: "100%", display: "flex", flexDirection: "row" }}>
