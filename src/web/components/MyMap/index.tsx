@@ -9,8 +9,7 @@ import { useJwtHook } from "../../hooks/useJwtHook";
 import { Favorite } from "@mui/icons-material";
 import { useAppDispatch, useAppSelector } from "../../hooks/reduxHook";
 import {
-  setCenter as setDefault,
-  selectCenter,
+  setCurrent as SetCurrent,
   selectCurrent,
 } from "../../reducers/mapSlice";
 
@@ -28,15 +27,20 @@ const containerStyle = {
 };
 
 const initCenter = {
-  lat: -3.745,
-  lng: -38.523,
+  lat: 10.8458083,
+  lng: 106.7945438,
 };
 
 function MyMap() {
   const dispatch = useAppDispatch();
 
-  const { latCenter, lngCenter } = useAppSelector(selectCenter);
   const { lat, lng } = useAppSelector(selectCurrent);
+  const currentPosition = {
+    lat,
+    lng
+  }
+
+  console.log("Current: ", lat, lng);
 
   const { isLoaded } = useJsApiLoader({
     id: "google-map-script",
@@ -44,9 +48,11 @@ function MyMap() {
     libraries: ["geometry", "places"],
   });
 
-  const [map, setMap] = React.useState(null);
+  const [map, setMap] = React.useState<google.maps.Map | undefined>(undefined);
 
+  const [defaultPosition, setDefaultPosition] = React.useState(initCenter);
   const [center, setCenter] = React.useState(initCenter);
+  const [current, setCurrent] = React.useState(currentPosition);
 
   const onLoad = React.useCallback(
     function callback(map: any) {
@@ -58,35 +64,37 @@ function MyMap() {
   );
 
   const onUnmount = React.useCallback(function callback(map: any) {
-    setMap(null);
+    setMap(undefined);
   }, []);
 
   const getCurrentGeoLocation = () => {
-    if (!latCenter && !lngCenter) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const { latitude, longitude } = position.coords;
-          console.log(latitude, longitude)
-          localStorage.setItem("lat", latitude.toString());
-          localStorage.setItem("lng", longitude.toString());
-          setCenter({ lat: latitude, lng: longitude });
-          dispatch(setDefault({ lat: latitude, lng: longitude }));
-        },
-        (err) => {
-          console.error(err);
-        }
-      );
-    }
-    if (lat && lng) {
-      setCenter({ lat, lng })
-    } else if (latCenter && lngCenter) {
-      setCenter({ lat: +latCenter, lng: +lngCenter });
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        // console.log(latitude, longitude);
+        localStorage.setItem("lat", latitude.toString());
+        localStorage.setItem("lng", longitude.toString());
+        setDefaultPosition({ lat: latitude, lng: longitude });
+        dispatch(SetCurrent({ lat: latitude, lng: longitude }));
+      },
+      (err) => {
+        console.error(err);
+      }
+    );
+  };
+
+  const setCurrentCenter = () => {
+    if (currentPosition !== defaultPosition) {
+      setCenter({ lat: +lat, lng: +lng });
+    } else {
+      setCenter(defaultPosition);
     }
   };
 
   useEffect(() => {
     // get current geolocation
     getCurrentGeoLocation();
+    setCurrentCenter();
   }, [navigator, setCenter]);
 
   // Favorite
