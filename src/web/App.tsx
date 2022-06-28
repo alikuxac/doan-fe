@@ -8,7 +8,8 @@ import PublicLayout from "./layouts/PublicLayout";
 
 const Login = Loadable(lazy(() => import("./pages/Login")));
 const Register = Loadable(lazy(() => import("./pages/Register")));
-const ForgotPassword = Loadable(lazy(() => import("./pages/ForgotPassword")));
+const ForgotPassword = Loadable(lazy(() => import("./pages/forgotPass/ForgotPassword")));
+const ForgotPasswordConfirm = Loadable(lazy(() => import("./pages/forgotPass/Confirm")))
 const Default = Loadable(lazy(() => import("./pages/Default")));
 
 export const App = () => {
@@ -25,6 +26,10 @@ export const App = () => {
               <Route path="/auth/login" element={<Login />} />,
               <Route path="/auth/register" element={<Register />} />,
               <Route path="/auth/forgot" element={<ForgotPassword />} />,
+              <Route
+                path="/auth/passconfirm"
+                element={<ForgotPasswordConfirm />}
+              />,
             ]}
           />
           <Route
