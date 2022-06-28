@@ -23,7 +23,7 @@ const createWindow = async () => {
   });
 
   ipcMain.on('update-title', (_e, arg) => {
-    mainWindow.setTitle(`Electron React TypeScript: ${arg}`);
+    mainWindow.setTitle(`Coffee Finder ${arg}`);
   });
 
   if (isDev) {
