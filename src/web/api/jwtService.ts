@@ -56,6 +56,22 @@ export default class JwtService {
     });
   }
 
+  // reset password
+  resetPassword(email: string) {
+    return axios.post(`${this.jwtConfig.auth}resetpass`, {
+      email,
+    });
+  }
+
+  // Confirm reset passwordw
+  confirmResetPassword(passcode: string, password: string, email: string) {
+    return axios.post(`${this.jwtConfig.auth}resetpass/confirm`, {
+      passcode,
+      password,
+      email
+    });
+  }
+
   logout() {
     localStorage.clear();
     delete axios.defaults.headers.common["Authorization"];
@@ -127,7 +143,7 @@ export default class JwtService {
   }
 
   createFavoriteById(id: string, data: any) {
-    return axios.put(`${this.jwtConfig.users}${id}/favorites`, data);
+    return axios.post(`${this.jwtConfig.users}${id}/favorites`, data);
   }
 
   updateFavoriteById(id: string, data: any) {
