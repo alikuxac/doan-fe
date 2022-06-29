@@ -4,22 +4,28 @@ import { RootState } from '../store';
 const mapSlice = createSlice({
     name: "map",
     initialState: {
+        firstLoad: true,
         lat: 0, // default lat
         lng: 0, // default lng
         address: '' // default address
     },
     reducers: {
         setCurrent: (state, action) => {
-            state.current.lat = action.payload.lat;
-            state.current.lng = action.payload.lng;
+            state.lat = action.payload.lat;
+            state.lng = action.payload.lng;
         },
         setAddress: (state, action) => {
-            state.current.address = action.payload.address;
+            state.address = action.payload.address;
         },
+        setFirstLoad: (state, action) => {
+            state.firstLoad = action.payload.firstLoad;
+            state.lat = action.payload.lat;
+            state.lng = action.payload.lng;
+        }
     }
 });
 
-export const { setCurrent, setAddress } = mapSlice.actions;
+export const { setCurrent, setAddress, setFirstLoad } = mapSlice.actions;
 
 export const selectCurrent = (state: RootState) => {
     return {
@@ -27,6 +33,8 @@ export const selectCurrent = (state: RootState) => {
         lngCurrent: state.map.lng
     }
 };
+
+export const selectFirstLoad = (state: RootState) => state.map.firstLoad;
 
 export const selectAddress = (state: RootState) => state.map.address
 
