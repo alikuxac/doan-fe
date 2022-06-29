@@ -48,6 +48,11 @@ const globalSlice = createSlice({
             state.lat = action.payload.lat;
             state.lng = action.payload.lng;
         },
+        resetMap: (state) => {
+            state.map.lat = 0;
+            state.map.lng = 0;
+            state.map.address = '';
+        },
         // set search
         setSearch: (state, action) => {
             state.search.enabled = action.payload.enabled;
@@ -64,6 +69,13 @@ const globalSlice = createSlice({
         },
         setSearchResult: (state, action) => {
             state.search.result = action.payload.result;
+        },
+        resetSearch: (state) => {
+            state.search.enabled = false;
+            state.search.lat = 0;
+            state.search.lng = 0;
+            state.search.value = '';
+            state.search.result = [];
         },
         //set direction
         setDirections: (state, action) => {
@@ -131,6 +143,8 @@ export const {
     setDirectionsEnabled,
     setDirectionsMode,
     setDirectionsOrigin,
+    resetMap,
+    resetSearch,
     resetAll
 } = globalSlice.actions;
 
