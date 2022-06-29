@@ -8,8 +8,8 @@ import {
   TextField,
 } from "@mui/material";
 import React from "react";
-import { Controller, useForm, SubmitHandler, FieldValues } from "react-hook-form";
-import { Outlet, useNavigate } from "react-router-dom";
+import { Controller, useForm } from "react-hook-form";
+import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
 import { useAppDispatch } from "../../hooks/reduxHook";
 import { useJwtHook } from "../../hooks/useJwtHook";
@@ -28,7 +28,7 @@ const Register = () => {
 
   const handleRegister = async (data: any) => {
     const { email } = data;
-    console.log(email)
+
     try {
       const response = await useJwtHook.resetPassword(email);
       console.log(response);
@@ -36,9 +36,8 @@ const Register = () => {
         setSuccessAlert(true);
         dispatch(setEmail(email));
         setTimeout(() => {
-          dispatch(resetEmail());
-        }, 300000);
-        navigate("/auth/passconfirm");
+          navigate("/auth/passconfirm");
+        }, 5000);
       } else {
         setErrorAlert(true);
       }
@@ -127,7 +126,13 @@ const Register = () => {
         >
           <div>
             Have a account?{" "}
-            <Link to={"/auth/login"} style={{ textDecoration: "none" }}>
+            <Link
+              onClick={() => {
+                dispatch(resetEmail());
+              }}
+              to={"/auth/login"}
+              style={{ textDecoration: "none" }}
+            >
               Login
             </Link>
           </div>
