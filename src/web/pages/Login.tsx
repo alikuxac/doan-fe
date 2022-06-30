@@ -13,7 +13,7 @@ import { Controller, useForm } from "react-hook-form";
 import { Link } from "react-router-dom";
 import { useAppDispatch } from "../hooks/reduxHook";
 import { useJwtHook } from "../hooks/useJwtHook";
-import { login } from "../reducers/authSlice";
+import { login } from "../reducers/globalSlice";
 
 const Login: React.FC<any> = () => {
   const { handleSubmit, control } = useForm();

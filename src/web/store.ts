@@ -1,10 +1,9 @@
 import { configureStore, ThunkAction, Action } from "@reduxjs/toolkit";
 import emailReducer from "./reducers/emailSlice";
-import authReducer from "./reducers/authSlice";
 import globalReducer from './reducers/globalSlice';
 
 export const store = configureStore({
-  reducer: { email: emailReducer, auth: authReducer, global: globalReducer },
+  reducer: { email: emailReducer, global: globalReducer },
 });
 
 export type AppDispatch = typeof store.dispatch;

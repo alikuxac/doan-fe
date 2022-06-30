@@ -1,9 +1,17 @@
 import { createSlice } from '@reduxjs/toolkit';
+import { checkAuth, getToken, getUserStorage } from "../helpers";
 import { RootState } from '../store';
 
 const globalSlice = createSlice({
     name: "global",
     initialState: {
+        auth: {
+            isAuthenticated: checkAuth(),
+            user: getUserStorage(),
+            token: getToken(),
+            error: null,
+            loading: false,
+        },
         map: {
             firstLoad: true,
             lat: 0, // default lat
@@ -35,18 +43,24 @@ const globalSlice = createSlice({
         },
     },
     reducers: {
+        // Auth
+        login: (state, action) => {
+            state.auth.isAuthenticated = true;
+            state.auth.user = action.payload.user;
+            state.auth.token = action.payload.token;
+        },
         // set current location
         setCurrent: (state, action) => {
-            state.lat = action.payload.lat;
-            state.lng = action.payload.lng;
+            state.map.lat = action.payload.lat;
+            state.map.lng = action.payload.lng;
         },
         setAddress: (state, action) => {
-            state.address = action.payload.address;
+            state.map.address = action.payload.address;
         },
         setFirstLoad: (state, action) => {
-            state.firstLoad = action.payload.firstLoad;
-            state.lat = action.payload.lat;
-            state.lng = action.payload.lng;
+            state.map.firstLoad = action.payload.firstLoad;
+            state.map.lat = action.payload.lat;
+            state.map.lng = action.payload.lng;
         },
         resetMap: (state) => {
             state.map.lat = 0;
@@ -111,6 +125,10 @@ const globalSlice = createSlice({
         },
         // reset all
         resetAll: (state) => {
+            localStorage.clear();
+            state.auth.isAuthenticated = false;
+            state.auth.user = null;
+            state.auth.token = null;
             state.map.firstLoad = true;
             state.map.lat = 0;
             state.map.lng = 0;
@@ -132,6 +150,7 @@ const globalSlice = createSlice({
 });
 
 export const {
+    login,
     setCurrent,
     setAddress,
     setFirstLoad,
@@ -147,6 +166,9 @@ export const {
     resetSearch,
     resetAll
 } = globalSlice.actions;
+
+//Select Auth
+export const selectAuth = (state: RootState) => state.global.auth;
 
 // select current
 export const selectCurrent = (state: RootState) => {
