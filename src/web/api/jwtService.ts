@@ -150,7 +150,7 @@ export default class JwtService {
     return axios.patch(`${this.jwtConfig.users}${id}/favorites`, data);
   }
 
-  deleteFavoriteById(id: string, data: any) {
-    return axios.patch(`${this.jwtConfig.users}${id}/favorites`, data);
+  deleteFavoriteById(id: string, timestamps: number) {
+    return axios.delete(`${this.jwtConfig.users}${id}/favorites/${timestamps}`);
   }
 }
