@@ -4,9 +4,9 @@ import { FavoriteInterface } from "./MyMap";
 import { useTheme } from "@mui/material/styles";
 import { useAppDispatch, useAppSelector } from "../hooks/reduxHook";
 import {
-  setCurrent,
   setUser,
   selectUser,
+  setFirstLoad,
 } from "../reducers/globalSlice";
 
 import Table from "@mui/material/Table";
@@ -182,7 +182,7 @@ export default function Favorite() {
   // Handle
   const showCurrent = (data: FavoriteInterface) => {
     const center = { lat: data.lat, lng: data.lng };
-    dispatch(setCurrent(center));
+    dispatch(setFirstLoad({firstLoad: false, ...center}));
   };
 
   const handleEditNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -209,6 +209,7 @@ export default function Favorite() {
       .then((res) => {
         console.log(res);
         localStorage.setItem("user", JSON.stringify(res.data));
+        localStorage.setItem("tab", "favorite");
         setEditSuccessBoolean(true);
         dispatch(setUser(res.data));
         window.location.reload();
@@ -269,7 +270,12 @@ export default function Favorite() {
     setEditDialogBoolean(false);
   };
 
-  const handleOpenDeleteDialog = () => {
+  const handleOpenDeleteDialog = (data: FavoriteInterface) => {
+    setFavoriteAddress(data.address);
+    setFavoriteName(data.name);
+    setFavoriteLat(data.lat);
+    setFavoriteLng(data.lng);
+    setFavoriteCreatedAt(data.createAt);
     setDeleteDialogBoolean(true);
   };
 
@@ -327,7 +333,7 @@ export default function Favorite() {
                 <IconButton
                   aria-label="delete"
                   size="small"
-                  onClick={() => handleOpenDeleteDialog()}
+                  onClick={() => handleOpenDeleteDialog(row)}
                 >
                   <DeleteIcon />
                 </IconButton>
