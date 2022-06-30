@@ -49,6 +49,9 @@ const globalSlice = createSlice({
             state.auth.user = action.payload.user;
             state.auth.token = action.payload.token;
         },
+        setUser: (state, action) => {
+            state.auth.user = action.payload.user;
+        },
         // set current location
         setCurrent: (state, action) => {
             state.map.lat = action.payload.lat;
@@ -151,6 +154,7 @@ const globalSlice = createSlice({
 
 export const {
     login,
+    setUser,
     setCurrent,
     setAddress,
     setFirstLoad,
@@ -169,6 +173,7 @@ export const {
 
 //Select Auth
 export const selectAuth = (state: RootState) => state.global.auth;
+export const selectUser = (state: RootState) => state.global.auth.user;
 
 // select current
 export const selectCurrent = (state: RootState) => {
