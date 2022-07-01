@@ -3,6 +3,8 @@ import React from "react";
 import axios from "axios";
 import DefaultConfig from "../api/jwtDefaultConfig";
 import { useJwtHook } from "../hooks/useJwtHook";
+import { useAppDispatch, useAppSelector } from "../hooks/reduxHook";
+import { setUser, selectUser, selectCurrent } from "../reducers/globalSlice";
 import MyMap from "../components/MyMap";
 import SearchLayout from "../components/Search";
 import FavoriteLayout from "../components/Favorite";
@@ -25,8 +27,11 @@ import SearchIcon from "@mui/icons-material/Search";
 import FavoriteIcon from "@mui/icons-material/Favorite";
 import MapIcon from "@mui/icons-material/Map";
 import AddIcon from "@mui/icons-material/Add";
+import MyLocationSharpIcon from "@mui/icons-material/MyLocationSharp";
 
 const Default: React.FC<any> = () => {
+  const dispatch = useAppDispatch();
+  const { latCurrent, lngCurrent } = useAppSelector(selectCurrent);
   const [value, setValue] = React.useState("search");
   const [open, setOpen] = React.useState(false);
   const [successAlert, setSuccessAlert] = React.useState(false);
@@ -34,22 +39,20 @@ const Default: React.FC<any> = () => {
 
   const [favoriteName, setFavoriteName] = React.useState("");
   const [favoriteAddress, setFavoriteAddress] = React.useState("");
-  const [favoriteLat, setFavoriteLat] = React.useState("");
-  const [favoriteLng, setFavoriteLng] = React.useState("");
+  const [favoriteLat, setFavoriteLat] = React.useState('');
+  const [favoriteLng, setFavoriteLng] = React.useState('');
 
   const handleChange = (_event: React.SyntheticEvent, newValue: string) => {
     setValue(newValue);
-    localStorage.setItem("tab", newValue);
   };
+
+  const UserData = useJwtHook.getUserStorage();
 
   const getValue = () => {
     var tabValue = localStorage.getItem("tab");
-    if (tabValue === "add") {
-      setValue("search");
-      setOpen(false);
-    } else {
-      setValue(value);
-      setOpen(false);
+    if (tabValue) {
+      setValue(tabValue === "add" ? "search" : tabValue);
+      if (tabValue === "add") setOpen(false);
     }
   };
 
@@ -73,9 +76,26 @@ const Default: React.FC<any> = () => {
     setOpen(false);
     setFavoriteName("");
     setFavoriteAddress("");
-    setFavoriteLat("");
-    setFavoriteLng("");
-    setValue('search');
+    setFavoriteLat('');
+    setFavoriteLng('');
+    setValue("search");
+  };
+
+  const handleConfirmAddDialog = () => {
+    axios
+      .post(`${DefaultConfig.baseUrl}users/${UserData?.id}/favorites`, {
+        name: favoriteName,
+        address: favoriteAddress,
+        lat: +favoriteLat,
+        lng: +favoriteLng,
+      })
+      .then((res) => {
+        localStorage.setItem("tab", "search");
+        localStorage.setItem("user", JSON.stringify(res.data));
+        dispatch(setUser(res.data));
+        window.location.reload();
+      })
+      .catch();
   };
 
   React.useEffect(() => {
@@ -170,6 +190,12 @@ const Default: React.FC<any> = () => {
                 type="text"
                 fullWidth
                 onChange={handleChangeLat}
+                value={favoriteLat}
+                InputProps={{
+                  endAdornment: <MyLocationSharpIcon onClick={() => {
+                    setFavoriteLng(latCurrent.toString());
+                  }} />,
+                }}
               />
               <TextField
                 margin="dense"
@@ -178,6 +204,16 @@ const Default: React.FC<any> = () => {
                 type="text"
                 fullWidth
                 onChange={handleChangeLng}
+                value={favoriteLng}
+                InputProps={{
+                  endAdornment: (
+                    <MyLocationSharpIcon
+                      onClick={() => {
+                        setFavoriteLng(lngCurrent.toString());
+                      }}
+                    />
+                  ),
+                }}
               />
             </DialogContent>
             <DialogActions>
@@ -189,7 +225,7 @@ const Default: React.FC<any> = () => {
               >
                 Cancel
               </Button>
-              <Button onClick={() => {}} color="primary">
+              <Button onClick={handleConfirmAddDialog} color="primary">
                 Add
               </Button>
             </DialogActions>
@@ -200,7 +236,9 @@ const Default: React.FC<any> = () => {
           <TabPanel value="favorite">
             <FavoriteLayout />
           </TabPanel>
-          <TabPanel value="directions">Hello</TabPanel>
+          <TabPanel value="directions">
+            <DirectionLayout />
+          </TabPanel>
         </TabContext>
       </Box>
     </Box>

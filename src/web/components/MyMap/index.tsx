@@ -4,14 +4,20 @@ import {
   useJsApiLoader,
   Circle,
   Marker,
+  InfoWindow,
+  DirectionsService,
+  DirectionsRenderer,
 } from "@react-google-maps/api";
 import { useJwtHook } from "../../hooks/useJwtHook";
-import { Favorite } from "@mui/icons-material";
 import { useAppDispatch, useAppSelector } from "../../hooks/reduxHook";
 import {
   setCurrent as SetCurrent,
   selectCurrent,
-} from "../../reducers/mapSlice";
+  setFirstLoad,
+  selectFirstLoad,
+  selectSearch,
+  selectDirections,
+} from "../../reducers/globalSlice";
 
 export interface FavoriteInterface {
   name: string;
@@ -19,6 +25,12 @@ export interface FavoriteInterface {
   lng: number;
   address: string;
   createAt: number;
+}
+
+export interface SearchInterface {
+  name: string;
+  address: string;
+  rating: number;
 }
 
 const containerStyle = {
@@ -31,20 +43,55 @@ const initCenter = {
   lng: 106.7945438,
 };
 
+const SearchMarker: React.FC<google.maps.MarkerOptions> = (options) => {
+  // Marker
+  const [searchMarker, setSearchMarker] = React.useState<google.maps.Marker>();
+
+  React.useEffect(() => {
+    if (!searchMarker) {
+      setSearchMarker(
+        new google.maps.Marker({ position: options.position, map: options.map })
+      );
+    }
+    // remove marker from map on unmount
+    return () => {
+      if (searchMarker) {
+        searchMarker.setMap(null);
+      }
+    };
+  }, [searchMarker]);
+
+  return null;
+};
+
 function MyMap() {
   const dispatch = useAppDispatch();
 
-  const { lat, lng } = useAppSelector(selectCurrent);
-  const currentPosition = {
-    lat,
-    lng
-  }
+  // Redux store
+  const { latCurrent, lngCurrent } = useAppSelector(selectCurrent);
+  const {
+    enabled: searchEnabled,
+    lat: searchLat,
+    lng: searchLng,
+    value: searchValue,
+  } = useAppSelector(selectSearch);
+  const {
+    destination,
+    origin,
+    enabled: directionEnabled,
+    mode,
+  } = useAppSelector(selectDirections);
+  const firstLoadBool = useAppSelector(selectFirstLoad);
 
-  console.log("Current: ", lat, lng);
+  const currentPosition = {
+    lat: latCurrent,
+    lng: latCurrent,
+  };
 
   const { isLoaded } = useJsApiLoader({
     id: "google-map-script",
     googleMapsApiKey: "AIzaSyDyJoOIqGwx-cdSvp37X0KMRcyBA8SG3Ko",
+    libraries: ["places"],
   });
 
   const [map, setMap] = React.useState<google.maps.Map | undefined>(undefined);
@@ -66,35 +113,50 @@ function MyMap() {
     setMap(undefined);
   }, []);
 
-  const getCurrentGeoLocation = () => {
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const { latitude, longitude } = position.coords;
-        // console.log(latitude, longitude);
-        localStorage.setItem("lat", latitude.toString());
-        localStorage.setItem("lng", longitude.toString());
-        setDefaultPosition({ lat: latitude, lng: longitude });
-        dispatch(SetCurrent({ lat: latitude, lng: longitude }));
-      },
-      (err) => {
-        console.error(err);
-      }
-    );
-  };
+  // Search Marker
 
-  const setCurrentCenter = () => {
-    if (currentPosition !== defaultPosition) {
-      setCenter({ lat: +lat, lng: +lng });
-    } else {
-      setCenter(defaultPosition);
+  // Get current location
+  const getCurrentGeoLocation = () => {
+    if (!firstLoadBool) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          // console.log(latitude, longitude);
+          setCurrent({ lat: latitude, lng: longitude });
+          dispatch(
+            setFirstLoad({ firstLoad: false, lat: latitude, lng: longitude })
+          );
+        },
+        (err) => {
+          console.error(err);
+        }
+      );
     }
   };
 
+  const setCurrentCenter = () => {
+    setCenter({ lat: +latCurrent, lng: +lngCurrent });
+  };
+
   useEffect(() => {
-    // get current geolocation
     getCurrentGeoLocation();
-    setCurrentCenter();
-  }, [navigator, setCenter]);
+  }, [navigator, setDefaultPosition, firstLoadBool]);
+
+  useEffect(() => {
+    if (!firstLoadBool) {
+      setCenter({ lat: +latCurrent, lng: +lngCurrent });
+    } else {
+      setCenter(defaultPosition);
+    }
+  }, [latCurrent, lngCurrent]);
+
+  useEffect(() => {
+    if (map !== undefined) {
+      const bounds = new window.google.maps.LatLngBounds(center);
+      map.fitBounds(bounds);
+      setMap(map);
+    }
+  }, [center]);
 
   // Favorite
   const [favoriteList, setFavoriteList] = React.useState<FavoriteInterface[]>(
@@ -103,15 +165,7 @@ function MyMap() {
 
   const getFavorite = async () => {
     const UserData = useJwtHook.getUserStorage();
-    const FavoriteStorage = useJwtHook.getUserFavorite();
-    if (FavoriteStorage) {
-      setFavoriteList(JSON.parse(FavoriteStorage));
-    } else {
-      useJwtHook.getFavorite(UserData?.id).then((res) => {
-        setFavoriteList(res.data.favorites);
-        useJwtHook.setUserFavorite(res.data.favorites);
-      });
-    }
+    setFavoriteList(UserData.favorites);
   };
 
   useEffect(() => {
@@ -122,11 +176,69 @@ function MyMap() {
     return (
       <Marker
         position={{ lat: favorite.lat, lng: favorite.lng }}
-        label={favorite.name}
+        label={index + ""}
         key={index}
+        onClick={(e) => {
+          const lat = e.latLng?.lat();
+          const lng = e.latLng?.lng();
+          const info = favoriteList.find((value) => {
+            return value.lat === lat && value.lng === lng;
+          });
+          if (!info) {
+            return;
+          } else {
+            return (
+              <InfoWindow position={{ lat: info.lat, lng: info.lng }}>
+                <div>
+                  <h3>{info?.name}</h3>
+                  <p>{info?.address}</p>
+                </div>
+              </InfoWindow>
+            );
+          }
+        }}
       ></Marker>
     );
   });
+
+  // Directions
+  const [directionResponse, setDirectionResponse] =
+    React.useState<google.maps.DistanceMatrixResponse | null>(null);
+
+  const directionsServiceOptions =
+    // @ts-ignore
+    React.useMemo<google.maps.DirectionsRequest>(() => {
+      return {
+        origin: origin.value,
+        destination: destination.value,
+        travelMode: mode,
+      };
+    }, [origin, destination]);
+
+  const directionsCallback = React.useCallback((res: any) => {
+    if (res !== null) {
+      setDirectionResponse(res);
+    } else {
+      console.log(res);
+    }
+  }, []);
+
+  const directionsRendererOptions = React.useMemo<any>(() => {
+    return {
+      directions: setDirectionResponse,
+    };
+  }, [setDirectionResponse]);
+
+  // Search marker
+
+  const [searchValueData, setSearchValueData] = React.useState<SearchInterface | null>(null);
+  useEffect(() => {
+    if (searchValue) {
+      setSearchValueData(JSON.parse(searchValue));
+    }
+    
+  }, [searchValue]);
+  const [searchInfo, setSearchInfo] = React.useState(false);
 
   return isLoaded ? (
     <GoogleMap
@@ -135,10 +247,16 @@ function MyMap() {
       zoom={17}
       onLoad={onLoad}
       onUnmount={onUnmount}
+      options={{
+        fullscreenControl: false,
+        mapTypeControl: false,
+        streetViewControl: false,
+        rotateControl: false,
+      }}
     >
       {/* Child components, such as markers, info windows, etc. */}
       <Circle
-        center={center}
+        center={defaultPosition}
         options={{
           strokeColor: "blue",
           strokeOpacity: 1,
@@ -153,9 +271,43 @@ function MyMap() {
         }}
         radius={75}
       />
-      <Marker key="defaultCenter" position={defaultPosition}></Marker>
-      {FavoriteMarkers}
-      <></>
+      <Marker
+        key="defaultCenter"
+        position={defaultPosition}
+        onUnmount={(marker) => {
+          marker.setMap(null);
+        }}
+      ></Marker>
+      {favoriteList.length > 0 ? FavoriteMarkers : <></>}
+      {searchEnabled ? (
+        <Marker
+          position={{ lat: searchLat, lng: searchLng }}
+          icon="http://maps.google.com/mapfiles/ms/icons/green-dot.png"
+          onClick={() => setSearchInfo(true)}
+        >
+          {searchInfo ? (<InfoWindow onCloseClick={() => setSearchInfo(false)}>
+            <div>
+              <h3>Tên: {searchValueData?.name}</h3>
+              <p>Địa chỉ: {searchValueData?.address}</p>
+              <p>Toạ độ: {searchLat},{searchLng}</p>
+              <p>Đánh giá: {searchValueData?.rating}</p>
+            </div>
+          </InfoWindow>) : <></>}
+          
+        </Marker>
+      ) : (
+        <></>
+      )}
+      {directionEnabled && origin && destination && (
+        <DirectionsService
+          options={directionsServiceOptions}
+          callback={directionsCallback}
+        />
+      )}
+
+      {directionResponse && directionsRendererOptions && (
+        <DirectionsRenderer options={directionsRendererOptions} />
+      )}
     </GoogleMap>
   ) : (
     <></>

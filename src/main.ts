@@ -29,7 +29,7 @@ const createWindow = async () => {
   if (isDev) {
     searchDevtools('REACT')
       .then((devtools) => {
-        session?.defaultSession?.loadExtension(devtools, {
+        session.defaultSession?.loadExtension(devtools, {
           allowFileAccess: true,
         });
       })

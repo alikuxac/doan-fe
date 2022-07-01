@@ -23,7 +23,6 @@ const globalSlice = createSlice({
             lat: 0, // default search marker lat
             lng: 0, // default search marker lng
             value: '', // default search address
-            result: [] // default search result
         },
         directions: {
             enabled: false, // default directions disabled
@@ -84,15 +83,11 @@ const globalSlice = createSlice({
             state.search.lat = action.payload.lat;
             state.search.lng = action.payload.lng;
         },
-        setSearchResult: (state, action) => {
-            state.search.result = action.payload.result;
-        },
         resetSearch: (state) => {
             state.search.enabled = false;
             state.search.lat = 0;
             state.search.lng = 0;
             state.search.value = '';
-            state.search.result = [];
         },
         //set direction
         setDirections: (state, action) => {
@@ -209,12 +204,14 @@ export const selectDirections = (state: RootState) => {
         origin: {
             lat: state.global.directions.origin.lat,
             lng: state.global.directions.origin.lng,
-            address: state.global.directions.origin.address
+            address: state.global.directions.origin.address,
+            value: state.global.directions.origin.value
         },
         destination: {
             lat: state.global.directions.destination.lat,
             lng: state.global.directions.destination.lng,
-            address: state.global.directions.destination.address
+            address: state.global.directions.destination.address,
+            value: state.global.directions.destination.value
         },
         mode: state.global.directions.mode
     }
