@@ -207,7 +207,6 @@ export default function Favorite() {
     useJwtHook
       .updateFavoriteById(user.id + "", data)
       .then((res) => {
-        console.log(res);
         localStorage.setItem("user", JSON.stringify(res.data));
         localStorage.setItem("tab", "favorite");
         setEditSuccessBoolean(true);
