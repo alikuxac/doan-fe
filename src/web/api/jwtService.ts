@@ -121,11 +121,15 @@ export default class JwtService {
   }
 
   updateUserById(id: string, user: any) {
-    return axios.put(`${this.jwtConfig.users}${id}`, user);
+    return axios.patch(`${this.jwtConfig.users}${id}`, user);
   }
 
   deleteUserById(id: string) {
     return axios.delete(`${this.jwtConfig.users}${id}`);
+  }
+
+  updatePassword(id: string, data: any) {
+    return axios.patch(`${this.jwtConfig.users}${id}/password`, data);
   }
 
   // Favorte

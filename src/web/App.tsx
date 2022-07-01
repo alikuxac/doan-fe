@@ -11,6 +11,7 @@ const Register = Loadable(lazy(() => import("./pages/Register")));
 const ForgotPassword = Loadable(lazy(() => import("./pages/forgotPass/ForgotPassword")));
 const ForgotPasswordConfirm = Loadable(lazy(() => import("./pages/forgotPass/Confirm")))
 const Default = Loadable(lazy(() => import("./pages/Default")));
+const UserSettings = Loadable(lazy(() => import("./pages/UserSettings")));
 
 export const App = () => {
   return (
@@ -35,7 +36,10 @@ export const App = () => {
           <Route
             path="/"
             element={<PrivateLayout />}
-            children={[<Route path="/dashboard" element={<Default />} />]}
+            children={[
+              <Route path="/dashboard" element={<Default />} />,
+              <Route path="/user-settings" element={<UserSettings />} />,
+            ]}
           />
         </Routes>
       </DefaultLayout>
